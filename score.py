@@ -1,4 +1,4 @@
-#!/usr/evn/bin python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import os
@@ -43,7 +43,7 @@ if __name__ == '__main__':
       with open(dataDir + scoreFile, 'r') as dataFile: # 打开数据文件
         for line in dataFile: # 处理一个学生成绩
           for score in line.split(','):
-            if re.match(r'[+-]?\d+$', score):
+            if re.match(r'[+-]?\d+([.]?[\d]+)?$', score): # 过滤出数字
               print score
 
   except SystemExit:
