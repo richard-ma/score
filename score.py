@@ -74,8 +74,9 @@ if __name__ == '__main__':
     for scoreFile in getFileList(dataDir): # 找出所有数据文件
       with open(dataDir + scoreFile, 'r') as dataFile: # 打开数据文件
         logging.info('数据文件: %s' % scoreFile)
-        for lineNum, line in enumerate(dataFile): # 处理一个学生成绩
-          scores = [] # 初始化一个空list，存放一个学生成绩
+
+        lineNum = 0
+        for line in dataFile: # 处理一个学生成绩
           line = removeCR(line) # 去除行尾回车
           if re.match(r'([+-]?\d+([.]?[\d]+)?[,]?)+$', line): # 过滤出数字
             # 分割数字并转换成浮点数
@@ -88,10 +89,32 @@ if __name__ == '__main__':
                 allStudentCnt[idx] += 1
                 allScoreSum[idx] += score
 
-            scores = [0 for x in scores if x < 0] # 将成绩中的缺考信息替换为成绩0
-            scores.append(sum(scores[3:5]))  # 添加理综成绩
-            scores.append(sum(scores[6:8]))  # 添加文综成绩
-            scores.append(sum(scores[0:8])) # 添加总成绩
+            # 文综和理综成绩是否齐全
+            llist = [0 for x in scores[3:6] if x >= 0]
+            wlist = [0 for x in scores[6:9] if x >= 0]
+            alllist = [0 for x in scores[0:9] if x >= 0]
+
+            # 将成绩中的缺考信息替换为成绩0
+            scores = [0 for x in scores if x < 0]
+            '''
+            # 理综成绩统计
+            if sum(llist) >= 0:
+              scores.append(sum(scores[3:6]))  # 添加理综成绩
+              allStudentCnt[9] += 1
+              allScoreSum[9] += scores[9]
+            # 文综成绩统计
+            if sum(wlist) >= 0:
+              scores.append(sum(scores[6:9]))  # 添加文综成绩
+              allStudentCnt[10] += 1
+              allScoreSum[10] += scores[10]
+            # 总成绩统计
+            if sum(alllist) >= 0:
+              scores.append(sum(scores[0:9])) # 添加总成绩
+              allStudentCnt[11] += 1
+              allScoreSum[11] += scores[11]
+            '''
+
+            lineNum += 1
           else: # 行数据验证有错误
             if lineNum == 0: continue # 忽略第一行标题
             logging.error('第%d行数据有误，请检查' % (lineNum+1))
