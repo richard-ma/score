@@ -8,7 +8,7 @@ import logging
 import re
 
 # 基础配置
-logging.basicConfig(level = logging.DEBUG)
+logging.basicConfig(level = logging.INFO)
 
 def getFileList(path):
     path = str(path)
@@ -27,6 +27,23 @@ if __name__ == '__main__':
             '物理', '化学', '生物',\
             '历史', '地理', '政治',\
             '未知']
+    fullScore = [150, 150, 150, 120, 100, 80, 100, 100, 100]
+    '''
+    linesScore = [
+            [130, 120, 110, 100, 90, 80, 70, 60, 50, 40, 30], # 语文
+            [130, 120, 110, 100, 90, 80, 70, 60, 50, 40, 30], # 数学
+            [130, 120, 110, 100, 90, 80, 70, 60, 50, 40, 30], # 英语
+            [130, 120, 110, 100, 90, 80, 70, 60, 50, 40, 30], # 物理
+            [130, 120, 110, 100, 90, 80, 70, 60, 50, 40, 30], # 化学
+            [130, 120, 110, 100, 90, 80, 70, 60, 50, 40, 30], # 生物
+            [130, 120, 110, 100, 90, 80, 70, 60, 50, 40, 30], # 历史
+            [130, 120, 110, 100, 90, 80, 70, 60, 50, 40, 30], # 地理
+            [130, 120, 110, 100, 90, 80, 70, 60, 50, 40, 30], # 政治
+            ]
+    '''
+    linesScore = [150, 130, 120, 110, 100, 90, 80, 70, 60, 50, 40, 30, 0] # 全部视为150分满分
+    passPercent = 0.60 # 及格分数为总分的60%
+
     dataDir = os.getcwd() + '/data/'
     ansDir = os.getcwd() + '/ans/'
     logging.info('数据目录: %s' % dataDir)
@@ -48,6 +65,7 @@ if __name__ == '__main__':
     '''
 
     studentCnt = 0 # 参考学生计数初始化
+    oldStudentCnt = 0 # 上一个文件完成时学生计数
     for scoreFile in getFileList(dataDir): # 找出所有数据文件
       with open(dataDir + scoreFile, 'r') as dataFile: # 打开数据文件
         logging.info('数据文件: %s' % scoreFile)
@@ -62,6 +80,8 @@ if __name__ == '__main__':
             lSum = 0
 
             scoreFlg = 0 # 该生没有获得成绩，全部缺考
+            wScoreFlg = 0 # 没有文综相关成绩，文综缺考
+            lScoreFlg = 0 # 没有理综相关成绩，理综缺考
             for score in line.split(','):
               score = float(score) # 类型转换
 
@@ -71,9 +91,12 @@ if __name__ == '__main__':
                 scoreFlg = 1 # 该生有学科获得成绩，可以计入参考学生
                 allSum += score # 计算学生总成绩
                 if scoreCode >= 3 and scoreCode <= 5: # 计算理综总成绩
-                  lSum += score # 计算文综总成绩
+                  lSum += score # 计算理综总成绩
+                  lScoreFlg = 1 # 该生有理综学科成绩
                 if scoreCode >= 6 and scoreCode <= 8:
-                  wSum += score
+                  wSum += score # 计算文综总成绩
+                  wScoreFlg = 1 # 该生有文综学科成绩
+
               scoreCode += 1
             if scoreFlg: studentCnt += 1 # 该生有学科获得成绩，计入参考人数
 
@@ -83,6 +106,10 @@ if __name__ == '__main__':
             logging.debug('理综总成绩: %3.1f' % cutfloat(lSum))
 
             lineNum += 1
+        logging.info('此文件导入学生数据%d条。' % int(studentCnt - oldStudentCnt))
+
+        logging.info('导入学生数据总数%d条。' % studentCnt)
+        oldStudentCnt = studentCnt # 更新上一个文件数据数量为当前数据数量
 
   except SystemExit:
     pass
