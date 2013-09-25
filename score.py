@@ -8,7 +8,7 @@ import logging
 import re
 
 # 基础配置
-logging.basicConfig(level = logging.INFO)
+logging.basicConfig(level = logging.DEBUG)
 
 def getFileList(path):
     path = str(path)
@@ -26,23 +26,24 @@ if __name__ == '__main__':
     typename = ['语文', '数学', '英语',\
             '物理', '化学', '生物',\
             '历史', '地理', '政治',\
-            '未知']
-    fullScore = [150, 150, 150, 120, 100, 80, 100, 100, 100]
-    '''
-    linesScore = [
-            [130, 120, 110, 100, 90, 80, 70, 60, 50, 40, 30], # 语文
-            [130, 120, 110, 100, 90, 80, 70, 60, 50, 40, 30], # 数学
-            [130, 120, 110, 100, 90, 80, 70, 60, 50, 40, 30], # 英语
-            [130, 120, 110, 100, 90, 80, 70, 60, 50, 40, 30], # 物理
-            [130, 120, 110, 100, 90, 80, 70, 60, 50, 40, 30], # 化学
-            [130, 120, 110, 100, 90, 80, 70, 60, 50, 40, 30], # 生物
-            [130, 120, 110, 100, 90, 80, 70, 60, 50, 40, 30], # 历史
-            [130, 120, 110, 100, 90, 80, 70, 60, 50, 40, 30], # 地理
-            [130, 120, 110, 100, 90, 80, 70, 60, 50, 40, 30], # 政治
+            '理综', '文综', '合计']
+    lineScore = [
+            [150, 130, 120, 110, 100, 90, 80, 70, 60, 50, 40, 30], # 语文
+            [150, 130, 120, 110, 100, 90, 80, 70, 60, 50, 40, 30], # 数学
+            [150, 130, 120, 110, 100, 90, 80, 70, 60, 50, 40, 30], # 英语
+            [120, 110, 100, 90, 80, 70, 60, 50, 40, 30],           # 物理
+            [100, 90, 80, 70, 60, 50, 40, 30],                     # 化学
+            [80, 70, 60, 50, 40, 30],                              # 生物
+            [100, 90, 80, 70, 60, 50, 40, 30],                     # 历史
+            [100, 90, 80, 70, 60, 50, 40, 30],                     # 地理
+            [100, 90, 80, 70, 60, 50, 40, 30],                     # 政治
+            [300, 270, 240, 210, 180, 150, 120, 90],               # 理综
+            [300, 270, 240, 210, 180, 150, 120, 90],               # 文综
             ]
-    '''
-    linesScore = [150, 130, 120, 110, 100, 90, 80, 70, 60, 50, 40, 30, 0] # 全部视为150分满分
-    passPercent = 0.60 # 及格分数为总分的60%
+    passRate = 0.60 # 及格分数为总分的60%
+
+    allScoreSum = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # 各科成绩之和
+    allStudentCnt = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # 各科参考人数
 
     dataDir = os.getcwd() + '/data/'
     ansDir = os.getcwd() + '/ans/'
@@ -72,7 +73,7 @@ if __name__ == '__main__':
         lineNum = 1
         for line in dataFile: # 处理一个学生成绩
           if re.match(r'([+-]?\d+([.]?[\d]+)?[,]?)+$', line): # 过滤出数字
-            logging.debug('正在处理第%d行' % lineNum)
+            logging.debug('正在处理第%d行' % (lineNum+1))
             scoreCode = 0
 
             allSum = 0
@@ -88,6 +89,9 @@ if __name__ == '__main__':
               logging.debug('%s: %3.1f' % (typename[scoreCode], score))
 
               if score >= 0:
+                allScoreSum[scoreCode] += score # 计算各科总分
+                allStudentCnt[scoreCode] += 1 # 各个学科参考人数
+
                 scoreFlg = 1 # 该生有学科获得成绩，可以计入参考学生
                 allSum += score # 计算学生总成绩
                 if scoreCode >= 3 and scoreCode <= 5: # 计算理综总成绩
@@ -98,14 +102,24 @@ if __name__ == '__main__':
                   wScoreFlg = 1 # 该生有文综学科成绩
 
               scoreCode += 1
+            # 成绩循环完毕
+            allScoreSum[9] = lSum
+            allScoreSum[10] = wSum
+            allStudentCnt[9] = max(allStudentCnt[3:5])
+            allStudentCnt[10] = max(allStudentCnt[6:8])
             if scoreFlg: studentCnt += 1 # 该生有学科获得成绩，计入参考人数
 
             logging.debug('参考学生计数: %d' % studentCnt)
             logging.debug('学生总成绩: %3.1f' % cutfloat(allSum))
-            logging.debug('文综总成绩: %3.1f' % cutfloat(wSum))
-            logging.debug('理综总成绩: %3.1f' % cutfloat(lSum))
+            logging.debug('文综总成绩: %3.1f' % cutfloat(allScoreSum[9]))
+            logging.debug('理综总成绩: %3.1f' % cutfloat(allScoreSum[10]))
 
             lineNum += 1
+          else: # 行数据验证有错误
+            if lineNum == 1: continue # 忽略第一行标题
+            logging.error('第%d行数据有误，请检查' % (lineNum+1))
+            sys.exit(-1)
+        # 学生循环完毕
         logging.info('此文件导入学生数据%d条。' % int(studentCnt - oldStudentCnt))
 
         logging.info('导入学生数据总数%d条。' % studentCnt)
