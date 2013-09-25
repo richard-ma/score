@@ -6,9 +6,13 @@ import sys
 import traceback
 import logging
 import re
+import pprint
 
 # 基础配置
 logging.basicConfig(level = logging.DEBUG)
+
+def removeCR(line):
+    if line[-1] == '\n': return line[0:-1]
 
 def getFileList(path):
     path = str(path)
@@ -23,7 +27,7 @@ def cutfloat(x):
 
 if __name__ == '__main__':
   try:
-    typename = ['语文', '数学', '英语',\
+    name = ['语文', '数学', '英语',\
             '物理', '化学', '生物',\
             '历史', '地理', '政治',\
             '理综', '文综', '合计']
@@ -70,60 +74,32 @@ if __name__ == '__main__':
     for scoreFile in getFileList(dataDir): # 找出所有数据文件
       with open(dataDir + scoreFile, 'r') as dataFile: # 打开数据文件
         logging.info('数据文件: %s' % scoreFile)
-        lineNum = 1
-        for line in dataFile: # 处理一个学生成绩
+        for lineNum, line in enumerate(dataFile): # 处理一个学生成绩
+          scores = [] # 初始化一个空list，存放一个学生成绩
+          line = removeCR(line) # 去除行尾回车
           if re.match(r'([+-]?\d+([.]?[\d]+)?[,]?)+$', line): # 过滤出数字
-            logging.debug('正在处理第%d行' % (lineNum+1))
-            scoreCode = 0
+            # 分割数字并转换成浮点数
+            scores = line.split(',')
+            scores = [float(x) for x in scores]
 
-            allSum = 0
-            wSum = 0
-            lSum = 0
-
-            scoreFlg = 0 # 该生没有获得成绩，全部缺考
-            wScoreFlg = 0 # 没有文综相关成绩，文综缺考
-            lScoreFlg = 0 # 没有理综相关成绩，理综缺考
-            for score in line.split(','):
-              score = float(score) # 类型转换
-
-              logging.debug('%s: %3.1f' % (typename[scoreCode], score))
-
+            # 统计每个元科目的参考人数和总成绩
+            for idx, score in enumerate(scores):
               if score >= 0:
-                allScoreSum[scoreCode] += score # 计算各科总分
-                allStudentCnt[scoreCode] += 1 # 各个学科参考人数
+                allStudentCnt[idx] += 1
+                allScoreSum[idx] += score
 
-                scoreFlg = 1 # 该生有学科获得成绩，可以计入参考学生
-                allSum += score # 计算学生总成绩
-                if scoreCode >= 3 and scoreCode <= 5: # 计算理综总成绩
-                  lSum += score # 计算理综总成绩
-                  lScoreFlg = 1 # 该生有理综学科成绩
-                if scoreCode >= 6 and scoreCode <= 8:
-                  wSum += score # 计算文综总成绩
-                  wScoreFlg = 1 # 该生有文综学科成绩
-
-              scoreCode += 1
-            # 成绩循环完毕
-            allScoreSum[9] = lSum
-            allScoreSum[10] = wSum
-            allStudentCnt[9] = max(allStudentCnt[3:5])
-            allStudentCnt[10] = max(allStudentCnt[6:8])
-            if scoreFlg: studentCnt += 1 # 该生有学科获得成绩，计入参考人数
-
-            logging.debug('参考学生计数: %d' % studentCnt)
-            logging.debug('学生总成绩: %3.1f' % cutfloat(allSum))
-            logging.debug('文综总成绩: %3.1f' % cutfloat(allScoreSum[9]))
-            logging.debug('理综总成绩: %3.1f' % cutfloat(allScoreSum[10]))
-
-            lineNum += 1
+            scores = [0 for x in scores if x < 0] # 将成绩中的缺考信息替换为成绩0
+            scores.append(sum(scores[3:5]))  # 添加理综成绩
+            scores.append(sum(scores[6:8]))  # 添加文综成绩
+            scores.append(sum(scores[0:8])) # 添加总成绩
           else: # 行数据验证有错误
-            if lineNum == 1: continue # 忽略第一行标题
+            if lineNum == 0: continue # 忽略第一行标题
             logging.error('第%d行数据有误，请检查' % (lineNum+1))
             sys.exit(-1)
         # 学生循环完毕
         logging.info('此文件导入学生数据%d条。' % int(studentCnt - oldStudentCnt))
-
-        logging.info('导入学生数据总数%d条。' % studentCnt)
         oldStudentCnt = studentCnt # 更新上一个文件数据数量为当前数据数量
+    logging.info('导入学生数据总数%d条。' % studentCnt)
 
   except SystemExit:
     pass
