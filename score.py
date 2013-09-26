@@ -27,6 +27,7 @@ def cutfloat(x):
 
 if __name__ == '__main__':
   try:
+    logging.info('****程序初始化****')
     name = ['语文', '数学', '英语',\
             '物理', '化学', '生物',\
             '历史', '地理', '政治',\
@@ -87,6 +88,7 @@ if __name__ == '__main__':
       logging.info('已创建ans目录')
     '''
 
+    logging.info('****开始读取成绩数据****')
     studentCnt = 0 # 参考学生计数初始化
     for scoreFile in getFileList(dataDir): # 找出所有数据文件
       with open(dataDir + scoreFile, 'r') as dataFile: # 打开数据文件
@@ -177,7 +179,7 @@ if __name__ == '__main__':
 #            pprint.pprint(scores)
 #            pprint.pprint(allStudentCnt)
 #            pprint.pprint(allScoreSum)
-            pprint.pprint(lineCnt)
+#            pprint.pprint(lineCnt)
 ############################################
 
           else: # 行数据验证有错误
@@ -189,7 +191,11 @@ if __name__ == '__main__':
         studentCnt += lineNum
       # 文件关闭
     # 文件循环完毕
-    logging.info('导入学生数据总数%d条。' % studentCnt)
+    logging.info('共读入学生数据总数%d条。' % studentCnt)
+
+    logging.info('****统计中，请稍后****')
+
+    logging.info('****输出统计结果****')
 
   except SystemExit:
     pass
