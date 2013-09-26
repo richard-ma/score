@@ -114,17 +114,19 @@ if __name__ == '__main__':
               allScoreSum[10] += scores[10]
             else:
               scores.append(0)
-            # 总成绩统计
-            if sum(alllist) >= 0:
+            # 总成绩统计（如果有一科成绩即视为参考）
+            if sum(alllist) > -9:
               scores.append(sum(scores[0:9])) # 添加总成绩
               allStudentCnt[11] += 1
               allScoreSum[11] += scores[11]
             else:
               scores.append(0)
 
+############################################
             pprint.pprint(scores)
             pprint.pprint(allStudentCnt)
             pprint.pprint(allScoreSum)
+############################################
 
             lineNum += 1
           else: # 行数据验证有错误
