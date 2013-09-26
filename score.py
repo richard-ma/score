@@ -46,8 +46,8 @@ if __name__ == '__main__':
             ]
     passRate = 0.60 # 及格分数为总分的60%
 
-    allScoreSum = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # 各科成绩之和
-    allStudentCnt = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # 各科参考人数
+    allScoreSum = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # 各科成绩之和
+    allStudentCnt = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # 各科参考人数
 
     dataDir = os.getcwd() + '/data/'
     ansDir = os.getcwd() + '/ans/'
@@ -89,30 +89,42 @@ if __name__ == '__main__':
                 allStudentCnt[idx] += 1
                 allScoreSum[idx] += score
 
-            # 文综和理综成绩是否齐全
-            llist = [0 for x in scores[3:6] if x >= 0]
-            wlist = [0 for x in scores[6:9] if x >= 0]
-            alllist = [0 for x in scores[0:9] if x >= 0]
+            # 文综和理综成绩是否齐全，list中求和为0证明成绩齐全
+            llist = map((lambda x: 0 if x > 0 else x), scores[3:6])
+            pprint.pprint(llist)
+            wlist = map((lambda x: 0 if x > 0 else x), scores[6:9])
+            pprint.pprint(wlist)
+            alllist = map((lambda x: 0 if x > 0 else x), scores[0:9])
+            pprint.pprint(alllist)
 
             # 将成绩中的缺考信息替换为成绩0
-            scores = [0 for x in scores if x < 0]
-            '''
+            scores = map((lambda x: 0 if x<0 else x), scores)
+
             # 理综成绩统计
             if sum(llist) >= 0:
               scores.append(sum(scores[3:6]))  # 添加理综成绩
               allStudentCnt[9] += 1
               allScoreSum[9] += scores[9]
+            else:
+              scores.append(0)
             # 文综成绩统计
             if sum(wlist) >= 0:
               scores.append(sum(scores[6:9]))  # 添加文综成绩
               allStudentCnt[10] += 1
               allScoreSum[10] += scores[10]
+            else:
+              scores.append(0)
             # 总成绩统计
             if sum(alllist) >= 0:
               scores.append(sum(scores[0:9])) # 添加总成绩
               allStudentCnt[11] += 1
               allScoreSum[11] += scores[11]
-            '''
+            else:
+              scores.append(0)
+
+            pprint.pprint(scores)
+            pprint.pprint(allStudentCnt)
+            pprint.pprint(allScoreSum)
 
             lineNum += 1
           else: # 行数据验证有错误
