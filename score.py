@@ -82,7 +82,7 @@ if __name__ == '__main__':
     # 判断输出目录是否存在
     if os.path.exists(ansDir):
       logging.error('ans目录已存在，请删除或移动此目录后重新执行。')
-      #sys.exit(1)
+      sys.exit(1)
     else:
       os.makedirs(ansDir) # 创建输出目录
       logging.info('已创建ans目录')
@@ -210,14 +210,34 @@ if __name__ == '__main__':
         studentCnt += lineNum
       # 文件关闭
     # 文件循环完毕
-    logging.info('共读入学生数据总数%d条。' % studentCnt)
+    logging.info('共读入学生数据%d条。' % studentCnt)
 
     logging.info('****统计中，请稍后****')
 
     logging.info('****输出统计结果****')
     with open(ansDir + '统计结果.csv', 'w') as ansFile: # 打开输出文件
-      for subject in subjects:
+      for idx, subject in enumerate(subjects):
         logging.info('正在输出%s统计结果' % subject)
+        # 输出标题行
+        ansFile.write(subject+'\n')
+        ansFile.write('参考人数,总分,平均分,及格人数,及格率')
+        for lidx, line in enumerate(lineScore[idx]):
+          if lidx == 0: continue # 第一个成绩为满分，不列入分数档
+          ansFile.write(','+str(line))
+        ansFile.write('\n')
+        # 输出数据
+        ansFile.write(str(allStudentCnt[idx]) + #参考人数
+                ',' + str(allScoreSum[idx]) + # 总分
+                ',' + str(float(allScoreSum[idx]) / allStudentCnt[idx]) + # 平均分
+                ',' + str(passStudentCnt[idx]) + # 及格人数
+                ',' + str(float(passStudentCnt[idx]) / allStudentCnt[idx] * 100) + '%' # 及格率
+                )
+        for lidx in range(0, len(lineCnt[idx])):
+          ansFile.write(','+str(lineCnt[idx][lidx])) # 分数档人数
+
+        ansFile.write('\n')
+        ansFile.write('\n')
+    logging.info('****统计成功****')
 
   except SystemExit:
     pass
