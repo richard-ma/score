@@ -28,7 +28,7 @@ def cutfloat(x):
 if __name__ == '__main__':
   try:
     logging.info('****程序初始化****')
-    name = ['语文', '数学', '英语',\
+    subjects = ['语文', '数学', '英语',\
             '物理', '化学', '生物',\
             '历史', '地理', '政治',\
             '理综', '文综', '总分']
@@ -52,6 +52,7 @@ if __name__ == '__main__':
 
     allScoreSum = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # 各科成绩之和
     allStudentCnt = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # 各科参考人数
+    passStudentCnt = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # 各科及格人数
     lineCnt = [
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],                     # 语文
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],                     # 数学
@@ -78,15 +79,13 @@ if __name__ == '__main__':
       logging.error('没有data目录，请先创建数据')
       sys.exit(1)
 
-    '''
     # 判断输出目录是否存在
     if os.path.exists(ansDir):
       logging.error('ans目录已存在，请删除或移动此目录后重新执行。')
-      sys.exit(1)
+      #sys.exit(1)
     else:
       os.makedirs(ansDir) # 创建输出目录
       logging.info('已创建ans目录')
-    '''
 
     logging.info('****开始读取成绩数据****')
     studentCnt = 0 # 参考学生计数初始化
@@ -104,8 +103,12 @@ if __name__ == '__main__':
             # 统计每个元科目的参考人数和总成绩
             for idx, score in enumerate(scores):
               if score >= 0:
+                # 统计参考人数和总成绩
                 allStudentCnt[idx] += 1
                 allScoreSum[idx] += score
+                # 统计及格人数
+                if score >= lineScore[idx][0] * passScore: passStudentCnt[idx] += 1
+                # 统计分数档
                 for ridx, r in enumerate(lineScore[idx]):
                   if (score > lineScore[idx][0]) or (score < 0):
                     logging.error('第%d行数据为： %d (超出范围：%d ~ %d) ',
@@ -131,8 +134,13 @@ if __name__ == '__main__':
             scores.append(sum(scores[0:9])) # 添加总成绩
             # 理综成绩统计（全部学科都有成绩才视为参考）
             if sum(llist) >= 0:
+              # 统计参考人数和总成绩
               allStudentCnt[9] += 1
               allScoreSum[9] += scores[9]
+              # 统计及格人数
+              if scores[9] >= lineScore[9][0] * passScore:
+                  passStudentCnt[9] += 1
+              # 统计分数档
               for ridx, r in enumerate(lineScore[9]):
                 if (scores[9] > lineScore[9][0]) or (scores[9] < 0):
                   logging.error('第%d行数据为： %d (超出范围：%d ~ %d) ',
@@ -146,8 +154,13 @@ if __name__ == '__main__':
                     break
             # 文综成绩统计（全部学科都有成绩才视为参考）
             if sum(wlist) >= 0:
+              # 统计参考人数和总成绩
               allStudentCnt[10] += 1
               allScoreSum[10] += scores[10]
+              # 统计及格人数
+              if scores[10] >= lineScore[10][0] * passScore:
+                  passStudentCnt[10] += 1
+              # 统计分数档
               for ridx, r in enumerate(lineScore[10]):
                 if (scores[10] > lineScore[10][0]) or (scores[10] < 0):
                   logging.error('第%d行数据为： %d (超出范围：%d ~ %d) ',
@@ -161,8 +174,13 @@ if __name__ == '__main__':
                     break
             # 总成绩统计（全部学科都有成绩才视为参考）
             if sum(alllist) >= 0:
+              # 统计参考人数和总成绩
               allStudentCnt[11] += 1
               allScoreSum[11] += scores[11]
+              # 统计及格人数
+              if scores[11] >= lineScore[11][0] * passScore:
+                  passStudentCnt[11] += 1
+              # 统计分数档
               for ridx, r in enumerate(lineScore[11]):
                 if (scores[11] > lineScore[11][0]) or (scores[11] < 0):
                   logging.error('第%d行数据为： %d (超出范围：%d ~ %d) ',
@@ -180,6 +198,7 @@ if __name__ == '__main__':
 #            pprint.pprint(allStudentCnt)
 #            pprint.pprint(allScoreSum)
 #            pprint.pprint(lineCnt)
+#            pprint.pprint(passStudentCnt)
 ############################################
 
           else: # 行数据验证有错误
@@ -196,6 +215,9 @@ if __name__ == '__main__':
     logging.info('****统计中，请稍后****')
 
     logging.info('****输出统计结果****')
+    with open(ansDir + '统计结果.csv', 'w') as ansFile: # 打开输出文件
+      for subject in subjects:
+        logging.info('正在输出%s统计结果' % subject)
 
   except SystemExit:
     pass
